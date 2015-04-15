@@ -51,9 +51,24 @@
 #define ToneMidMaxdb	10
 #define ToneTrebleMaxdb	10
 
+/*
+ * Scaling definition
+ */
+#define ToneBoostMaxP   10
+#define GeqMaxResp      12.04   //share with PeqMaxResp
+#define PeqMaxResp      10
+#define MainVolMax      12.04
+#define FixedBoost      48.16
+#define ChanGainPMax    6
+
+#define ToneBoostMaxS	0.0
+#define ChanGainSMax	12.0
+
 int YMEM2HEX(float frac);
 int XMEM2HEX(double frac);
 int DYMEM2HEX(double frac);
+
+/*---------------------------------------------------------*/
 
 #define ADSP_CTL_SILICON_ID                     0x000000
 #define ADSP_CTL_DSP_CTR			0x000010
