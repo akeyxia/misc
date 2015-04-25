@@ -4,9 +4,13 @@
 #include "tef6638.h"
 #include "frac2hex.c"
 
-#define _DEBUG
+//#define _DEBUG	1
+#define __COUPLED_CONTROL	1
 
-#ifdef _DEBUG
+#if  _DEBUG
+#define LoudnessBassStep	(0.1)
+#define LoudnessTrebleStep	(0.1)
+#elif __COUPLED_CONTROL
 #define LoudnessBassStep	(0.1)
 #define LoudnessTrebleStep	(0.1)
 #else
@@ -152,7 +156,7 @@ static void loudness_max()
  * The Treble boost gain is relational with Bass boost gain, so only one
  * value is enough.
  */
-static void loudness_boost(float bass_gain)
+static void loudness_coupled_boost(float bass_gain)
 {
 	float bass_maxf, treble_maxf, bass_gainf, treble_gain;
 	int bass_max, treble_max, bass_value;
@@ -204,7 +208,7 @@ static void loudness_independent_treble_boost(float treble_gain)
 
 int main(int argc, char *argv[])
 {
-#ifdef _DEBUG
+#if _DEBUG
 	float bass_gains[33] = {
 		0.0f, 10.0f, 10.0f, 10.0f,
 		10.0f, 10.0f, 10.0f, 9.9f,
@@ -223,6 +227,29 @@ int main(int argc, char *argv[])
 		2.8f, 2.5f, 2.1f, 1.7f,
 		1.3f, 0.9f, 0.7f, 0.4f,
 		0.2f, 0.1f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f,
+	};
+#elif __COUPLED_CONTROL
+	float bass_gains[33] = {
+		0.0f, 0.0f, 0.0f, 0.0f,
+		10.0f, 10.0f, 10.0f, 10.0f,
+		9.5f, 9.5f, 9.0f, 9.0f,
+		8.5f, 8.0f, 7.0f, 7.0f,
+		6.0f, 6.0f, 6.0f, 4.0f,
+		4.0f, 3.0f, 2.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f,
+	};
+	float treble_gains[33] = {
+		0.0f, 0.0f, 0.0f, 0.0f,
+		4.0f, 4.0f, 4.0f, 4.0f,
+		3.0f, 3.0f, 3.0f, 3.0f,
+		3.0f, 3.0f, 2.0f, 2.0f,
+		2.0f, 2.0f, 1.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f, 0.0f,
 		0.0f,
@@ -287,8 +314,8 @@ int main(int argc, char *argv[])
 		15000.0f, 20000.0f,
 		22050.0f,
 	};
-	int i;
-	double j;/* change float to double to avoid the loss of part precison */
+    int i;
+	double j;
 
 #ifdef _DEBUG
 	bass_2nd_peaking(80.0f, 1.0f);
@@ -298,16 +325,15 @@ int main(int argc, char *argv[])
 	treble_2nd_peaking(LoudnessTrebleFc, 1.0f);
 	loudness_max();
 
-#ifdef COUPLED_CONTROL
+#if __COUPLED_CONTROL
 	printf("Loudness Boost for Volume setting from 0 to 32:\n");
 	for (i = 0; i < 33; i++) {
-		loudness_boost(bass_gains[i]);
+		loudness_coupled_boost(bass_gains[i]);
 	}
 
 	printf("Loudness Boost gain in dB unit:\n");
-	for (j = 0.0f; j <= LoudnessBassMaxdb;) {
-		loudness_boost(j);
-		j += 0.5f;
+	for (j = 0; j <= LoudnessBassMaxdb; j += LoudnessBassStep) {
+		loudness_coupled_boost(j);
 	}
 #else
 #if 0
