@@ -1,0 +1,111 @@
+diff --git a/AudioStreamOutALSA.cpp b/AudioStreamOutALSA.cpp
+index 1accfd7..e309b88 100644
+--- a/AudioStreamOutALSA.cpp
++++ b/AudioStreamOutALSA.cpp
+@@ -22,6 +22,7 @@
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <dlfcn.h>
++#include <stdio.h>
+ 
+ #define LOG_TAG "AudioHardwareALSA"
+ #include <utils/Log.h>
+@@ -33,6 +34,8 @@
+ 
+ #include "AudioHardwareALSA.h"
+ 
++#define LOG_FILE_PATH "/data/alsa.wav"
++
+ #ifndef ALSA_DEFAULT_SAMPLE_RATE
+ #define ALSA_DEFAULT_SAMPLE_RATE 44100 // in Hz
+ #endif
+@@ -43,6 +46,9 @@ namespace android
+ // ----------------------------------------------------------------------------
+ 
+ static const int DEFAULT_SAMPLE_RATE = ALSA_DEFAULT_SAMPLE_RATE;
++static int g_fd;
++static char g_open_flag = 1;
++FILE *fp = NULL;
+ 
+ // ----------------------------------------------------------------------------
+ 
+@@ -87,8 +93,21 @@ ssize_t AudioStreamOutALSA::write(const void *buffer, size_t bytes)
+     snd_pcm_sframes_t n;
+     size_t            sent = 0;
+     status_t          err  = 0;
++	int ret = 0;
++	char * wp;
++	char * ptr = (char *)malloc(bytes);
++
++	if (g_open_flag) {
++		fp = fopen(LOG_FILE_PATH, "w+");
++		if (fp == NULL) {
++			LOGW("~~~~~~~~~~~~~~~~~~~~~~~~~~ open %s failed\n", LOG_FILE_PATH);
++		}
++		LOGW("~~~~~~~~~~~~~~~~~~~~~~~~~~~~ opened record log file --- \n");
++		g_open_flag = 0;
++	}
+ 
+     do {
++	wp = (char *)buffer + sent;
+         if (mHandle->mmap)
+             n = snd_pcm_mmap_writei(mHandle->handle,
+                                (char *)buffer + sent,
+@@ -97,6 +116,7 @@ ssize_t AudioStreamOutALSA::write(const void *buffer, size_t bytes)
+             n = snd_pcm_writei(mHandle->handle,
+                                (char *)buffer + sent,
+                                snd_pcm_bytes_to_frames(mHandle->handle, bytes - sent));
++
+         if (n == -EBADFD) {
+             LOGW("badstate and do recovery.....");
+             switch(snd_pcm_state(mHandle->handle)){
+@@ -123,7 +143,9 @@ ssize_t AudioStreamOutALSA::write(const void *buffer, size_t bytes)
+         }
+         else if (n < 0) {
+             if (mHandle->handle) {
+-                LOGW("underrun and do recovery.....");
++                //LOGW("underrun and do recovery.....");
++                LOGW("underrun and do recovery.....(mHandle->mmap = %d, n = %d( %d))",
++                	mHandle->mmap, n, static_cast<ssize_t>(n));
+                 // snd_pcm_recover() will return 0 if successful in recovering from
+                 // an error, or -errno if the error was unrecoverable.
+                 n = snd_pcm_recover(mHandle->handle, n, 1);
+@@ -134,12 +156,25 @@ ssize_t AudioStreamOutALSA::write(const void *buffer, size_t bytes)
+             }
+         }
+         else {
++		memcpy(ptr+sent, wp, n);
+             mFrameCount += n;
+             sent += static_cast<ssize_t>(snd_pcm_frames_to_bytes(mHandle->handle, n));
+         }
+ 
+     } while (mHandle->handle && sent < bytes);
+ 
++	if (fp != NULL) {
++		ret = fwrite(buffer, 1, bytes, fp);
++		if (ret < 0) {
++			LOGW("~~~~~~~~~~~~~ write record log to file failed\n");
++		}
++	} else {
++		LOGW("~~~~~~~~~~~~~ record log file is NULL\n");
++	}
++
++	if (ptr != NULL)
++		free(ptr);
++
+     return sent;
+ }
+ 
+@@ -159,6 +194,12 @@ status_t AudioStreamOutALSA::close()
+ {
+     AutoMutex lock(mLock);
+ 
++if (fp != NULL) {
++	LOGW("~~~~~~~~~~~~~~~ Close record log file\n");
++	fclose(fp);
++	g_open_flag = 1;
++}
++
+     snd_pcm_drain (mHandle->handle);
+     ALSAStreamOps::close();
+ 
