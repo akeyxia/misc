@@ -1,0 +1,20 @@
+[user]
+	name = xxx
+	email = xxx@xxx.com
+[color]
+	ui = auto
+[http]
+	sslVerify = false
+[alias]
+	lol = log --pretty=format:\"%h-%an, %ai: %s\" --decorate
+	lols = log --pretty=format:\"%h-%an, %ai: %s\" --decorate --stat
+	lolg = log --pretty=format:\"%h-%an, %ai: %s\" --graph --decorate
+	lolo = log --pretty=format:\"%h-%an, %ci: %s\" --decorate
+	lolos = log --pretty=format:\"%h-%an, %ci: %s\" --decorate --stat
+	lolog = log --pretty=format:\"%h-%an, %ci: %s\" --graph --decorate
+[core]
+	editor = vim
+[merge]
+	tool = meld
+[push]
+	default = simple
