@@ -1,0 +1,599 @@
+/---------- testusb app ----------/
+usage: ./testusb [options]
+Options:
+	-D dev		only test specific device
+	-A usb-dir
+	-a		test all recognized devices
+	-l		loop forever(for stress test)
+	-t testnum	only run specified case
+	-n		no test running, show devices to be tested
+Case arguments:
+	-c iterations	default 1000
+	-s packetsize	default 512
+	-g sglen	default 32
+	-v vary		default 512
+
+
+common use case:
+./testusb -a -c10 -t1 -s4096 -g32 -v32
+./testusb -a -c10 -t2 -s4096 -g32 -v32
+./testusb -a -c10 -t3 -s4096 -g32 -v32
+./testusb -a -c10 -t4 -s4096 -g32 -v512
+./testusb -a -c10 -t5 -s512 -g32 -v512
+./testusb -a -c10 -t6 -s512 -g32 -v512
+./testusb -a -c10 -t7 -s512 -g32 -v512 
+./testusb -a -c10 -t8 -s512 -g32 -v512 
+./testusb -a -c10 -t9 -s512 -g32 -v256 
+./testusb -a -c10 -t10 -s512 -g16 -v32 
+./testusb -a -c10 -t11 -s512 -g32 -v256 
+./testusb -a -c10 -t12 -s512 -g32 -v256 
+./testusb -a -c10 -t13 -s512 -g32 -v256 
+./testusb -a -c10 -t14 -s256 -g32 -v1 
+
+example:
+$ sudo ./testusb_host -a -t2 -c100 -s4096 -g32 -v32
+unknown speed	/dev/bus/usb/003/010	0
+/dev/bus/usb/003/010 test 2,    0.014039 secs
+$ sudo ./testusb_host -a -t2 -c1000 -s4096 -g32 -v32
+unknown speed	/dev/bus/usb/003/010	0
+/dev/bus/usb/003/010 test 2,    0.137475 secs
+$ sudo ./testusb_host -a -t2 -c10000 -s4096 -g32 -v32
+unknown speed	/dev/bus/usb/003/010	0
+/dev/bus/usb/003/010 test 2,    1.303135 secs
+
+
+/---------- test for MSC(Mass Storage Class) ----------/
+Building kernel image:
+1) Enable USB testing driver as module(The exact option in menuconfig is- USB Testing driver(DEVELOPMENT or EXPERIMENTAL) - Make this as module)
+2) Disable MSC class driver(The exact option that appears in menuconfig is - USB Mass storage Support - Make this option as a module or disable it). This is to make sure that the slave device plugged in registers with usb test driver.
+drivers/usb/storage/Kconfig:
+CONFIG_USB_STORAGE is not set
+3) Build the image and usbtest.ko module
+
+
+NOTE:
+1) Only Control end point tests can be run using a device which is a registered in MSC or HID class.
+2) To run both bulk and control end point tests, use a gadget zero device.
+
+
+---> step1(obtain usb devices info[Driver=(none)])
+sh-3.2# cat /sys/kernel/debug/usb/devices 
+
+T:  Bus=04 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=5000 MxCh= 1
+B:  Alloc=  0/800 us ( 0%), #Int=  0, #Iso=  0
+D:  Ver= 3.00 Cls=09(hub  ) Sub=00 Prot=03 MxPS= 9 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0003 Rev= 3.14
+S:  Manufacturer=Linux 3.14.31-g08ca2d7-dirty xhci-hcd
+S:  Product=xHCI Host Controller
+S:  SerialNumber=xhci-hcd.1.auto
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=256ms
+
+T:  Bus=03 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=480  MxCh= 1
+B:  Alloc=  0/800 us ( 0%), #Int=  0, #Iso=  0
+D:  Ver= 2.00 Cls=09(hub  ) Sub=00 Prot=01 MxPS=64 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0002 Rev= 3.14
+S:  Manufacturer=Linux 3.14.31-g08ca2d7-dirty xhci-hcd
+S:  Product=xHCI Host Controller
+S:  SerialNumber=xhci-hcd.1.auto
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=256ms
+
+T:  Bus=02 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=5000 MxCh= 1
+B:  Alloc=  0/800 us ( 0%), #Int=  0, #Iso=  0
+D:  Ver= 3.00 Cls=09(hub  ) Sub=00 Prot=03 MxPS= 9 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0003 Rev= 3.14
+S:  Manufacturer=Linux 3.14.31-g08ca2d7-dirty xhci-hcd
+S:  Product=xHCI Host Controller
+S:  SerialNumber=xhci-hcd.0.auto
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=256ms
+
+T:  Bus=01 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=480  MxCh= 1
+B:  Alloc=  0/800 us ( 0%), #Int=  0, #Iso=  0
+D:  Ver= 2.00 Cls=09(hub  ) Sub=00 Prot=01 MxPS=64 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0002 Rev= 3.14
+S:  Manufacturer=Linux 3.14.31-g08ca2d7-dirty xhci-hcd
+S:  Product=xHCI Host Controller
+S:  SerialNumber=xhci-hcd.0.auto
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=256ms
+
+T:  Bus=01 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  2 Spd=480  MxCh= 0
+D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+P:  Vendor=1908 ProdID=0226 Rev= 1.11
+C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=150mA
+I:* If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=(none)
+E:  Ad=01(O) Atr=02(Bulk) MxPS= 512 Ivl=0ms
+E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
+
+
+---> step2(inmod usbtest.ko)
+#insmod /lib/modules/3.14.31-g2cb4c85/kernel/drivers/usb/misc/usbtest.ko vendor=0x1908 product=0x0226
+[  517.385490] usbtest 1-1:1.0: matched module params, vend=0x1908 prod=0x0226
+[  517.393060] usbtest 1-1:1.0: Generic USB device
+[  517.400493] usbtest 1-1:1.0: high-speed {control} tests
+[  517.407389] usbcore: registered new interface driver usbtest
+
+
+---> step3(disconnect and plugin USB device, then obtain usb devices info[Driver=usbtest])
+sh-3.2# [ 4372.852147] usb 1-1: USB disconnect, device number 3
+[ 4375.434517] usb 1-1: new high-speed USB device number 4 using xhci-hcd
+[ 4375.574668] usb 1-1: New USB device found, idVendor=1908, idProduct=0226
+[ 4375.581870] usb 1-1: New USB device strings: Mfr=0, Product=0, SerialNumber=0
+[ 4375.590386] usbtest 1-1:1.0: matched module params, vend=0x1908 prod=0x0226
+[ 4375.597794] usbtest 1-1:1.0: Generic USB device
+[ 4375.602545] usbtest 1-1:1.0: high-speed {control} tests
+
+sh-3.2# cat /sys/kernel/debug/usb/devices 
+
+T:  Bus=04 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=5000 MxCh= 1
+B:  Alloc=  0/800 us ( 0%), #Int=  0, #Iso=  0
+D:  Ver= 3.00 Cls=09(hub  ) Sub=00 Prot=03 MxPS= 9 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0003 Rev= 3.14
+S:  Manufacturer=Linux 3.14.31-g08ca2d7-dirty xhci-hcd
+S:  Product=xHCI Host Controller
+S:  SerialNumber=xhci-hcd.1.auto
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=256ms
+
+T:  Bus=03 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=480  MxCh= 1
+B:  Alloc=  0/800 us ( 0%), #Int=  0, #Iso=  0
+D:  Ver= 2.00 Cls=09(hub  ) Sub=00 Prot=01 MxPS=64 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0002 Rev= 3.14
+S:  Manufacturer=Linux 3.14.31-g08ca2d7-dirty xhci-hcd
+S:  Product=xHCI Host Controller
+S:  SerialNumber=xhci-hcd.1.auto
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=256ms
+
+T:  Bus=02 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=5000 MxCh= 1
+B:  Alloc=  0/800 us ( 0%), #Int=  0, #Iso=  0
+D:  Ver= 3.00 Cls=09(hub  ) Sub=00 Prot=03 MxPS= 9 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0003 Rev= 3.14
+S:  Manufacturer=Linux 3.14.31-g08ca2d7-dirty xhci-hcd
+S:  Product=xHCI Host Controller
+S:  SerialNumber=xhci-hcd.0.auto
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=256ms
+
+T:  Bus=01 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=480  MxCh= 1
+B:  Alloc=  0/800 us ( 0%), #Int=  0, #Iso=  0
+D:  Ver= 2.00 Cls=09(hub  ) Sub=00 Prot=01 MxPS=64 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0002 Rev= 3.14
+S:  Manufacturer=Linux 3.14.31-g08ca2d7-dirty xhci-hcd
+S:  Product=xHCI Host Controller
+S:  SerialNumber=xhci-hcd.0.auto
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=256ms
+
+T:  Bus=01 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  3 Spd=480  MxCh= 0
+D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+P:  Vendor=1908 ProdID=0226 Rev= 1.11
+C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=150mA
+I:* If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=usbtest
+E:  Ad=01(O) Atr=02(Bulk) MxPS= 512 Ivl=0ms
+E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
+
+
+---> step4(test usb)
+sh-3.2# /data/testusb -D /dev/bus/usb/001/003
+/data/testusb: /dev/bus/usb/001/003 may see only[ 1462.409027] usbtest 1-1:1.0: TEST 0:  NOP
+ control tests
+/dev/bus/usb/001/003 test 0,    [ 1462.417607] usbtest 1-1:1.0: TEST 9:  ch9 (subset) control tests, 1000 times
+0.008465 secs
+/dev/bus/usb/001/003 test 9,    0.335645 secs[ 1462.753322] usbtest 1-1:1.0: TEST 10:  queue 32 control calls, 1000 times
+
+[ 1463.605390] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b000/ab88b000 (bad dma)
+[ 1463.614154] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b040/ab88b040 (bad dma)
+[ 1463.624623] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b080/ab88b080 (bad dma)
+[ 1463.633385] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b0c0/ab88b0c0 (bad dma)
+[ 1463.642403] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b100/ab88b100 (bad dma)
+[ 1463.651285] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b140/ab88b140 (bad dma)
+[ 1463.660087] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b180/ab88b180 (bad dma)
+[ 1463.668891] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b1c0/ab88b1c0 (bad dma)
+[ 1463.677942] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b200/ab88b200 (bad dma)
+[ 1463.686762] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b240/ab88b240 (bad dma)
+[ 1463.695570] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b2c0/ab88b2c0 (bad dma)
+[ 1463.704443] xhci-hcd xhci-hcd.0.auto: dma_pool_free buffer-128, eb88b300/ab88b300 (bad dma)
+/dev/bus/usb/001/003 test 10,    0.960086 secs
+
+
+
+
+/---------- test for gadget zero ----------/
+Building gadget zero:
+1) Enable gadget support(Exact option in menuconfig - USB gagdget support under device drivers->USB support) statically.
+2)Enter inside the USB gadget support. Now enable - "Support for USB gadgets" (statically). This will enable USB gadget Drivers as module.
+3) Now enable Gadget Zero(DEVELOPMENT) as module.
+drivers/usb/gadget/Kconfig
+CONFIG_USB_ZERO=m
+don't set CONFIG_USB_G_ANDROID
+4) Now enable Driver mode as USB peripheral(gadget stack).
+
+---> step1(insmod g_zero.ko, plug in machine device port to usb host port of PC via usb cable)
+Device:
+sh-3.2# insmod g_zero.ko 
+[  147.898965] zero gadget: Gadget Zero, version: Cinco de Mayo 2008
+[  147.905349] zero gadget: zero ready
+[  147.909452] DEBUG: Passed dwc3_gadget_pullup 1592 
+[  147.914471] reg = 0x0, is_on = 1
+
+Host:
+[22815.791063] usb 3-2.3: new high-speed USB device number 41 using xhci_hcd
+[22815.808355] usb 3-2.3: New USB device found, idVendor=0525, idProduct=a4a0
+[22815.808366] usb 3-2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[22815.808373] usb 3-2.3: Product: Gadget Zero
+[22815.808378] usb 3-2.3: Manufacturer: Linux 3.14.31-g08ca2d7-dirty with dwc3-gadget
+[22815.808383] usb 3-2.3: SerialNumber: 0123456789.0123456789.0123456789
+[22815.912128] usbtest 3-2.3:3.0: Linux gadget zero
+[22815.912132] usbtest 3-2.3:3.0: high-speed {control in/out bulk-in bulk-out} tests (+alt)
+[22815.912150] usbcore: registered new interface driver usbtest
+
+Device:
+sh-3.2# [  335.421359] zero gadget: high-speed config #3: source/sink
+
+
+---> step2(issue testusb on PC)
+$ sudo ./testusb_host -a
+unknown speed	/dev/bus/usb/003/041	0
+/dev/bus/usb/003/041 test 0,    0.000010 secs
+/dev/bus/usb/003/041 test 1,    0.044227 secs
+/dev/bus/usb/003/041 test 2,    0.043085 secs
+/dev/bus/usb/003/041 test 3,    0.044080 secs
+/dev/bus/usb/003/041 test 4,    0.041895 secs
+/dev/bus/usb/003/041 test 5,    0.690032 secs
+/dev/bus/usb/003/041 test 6,    0.495508 secs
+/dev/bus/usb/003/041 test 7,    0.703052 secs
+/dev/bus/usb/003/041 test 8,    0.506685 secs
+/dev/bus/usb/003/041 test 9,    1.648471 secs
+/dev/bus/usb/003/041 test 10,    2.782323 secs
+/dev/bus/usb/003/041 test 11,   15.994455 secs
+/dev/bus/usb/003/041 test 12,   15.999423 secs
+
+dmesg on PC:
+[26437.889917] usbtest 3-2.3:3.0: TEST 0:  NOP
+[26437.890468] usbtest 3-2.3:3.0: TEST 1:  write 512 bytes 1000 times
+[26437.935256] usbtest 3-2.3:3.0: TEST 2:  read 512 bytes 1000 times
+[26437.978898] usbtest 3-2.3:3.0: TEST 3:  write/512 0..512 bytes 1000 times
+[26438.023498] usbtest 3-2.3:3.0: TEST 4:  read/512 0..512 bytes 1000 times
+[26438.065922] usbtest 3-2.3:3.0: TEST 5:  write 1000 sglists 32 entries of 512 bytes
+[26438.757103] usbtest 3-2.3:3.0: TEST 6:  read 1000 sglists 32 entries of 512 bytes
+[26439.253619] usbtest 3-2.3:3.0: TEST 7:  write/512 1000 sglists 32 entries 0..512 bytes
+[26439.957867] usbtest 3-2.3:3.0: TEST 8:  read/512 1000 sglists 32 entries 0..512 bytes
+[26440.465586] usbtest 3-2.3:3.0: TEST 9:  ch9 (subset) control tests, 1000 times
+[26442.116173] usbtest 3-2.3:3.0: TEST 10:  queue 32 control calls, 1000 times
+[26444.901817] usbtest 3-2.3:3.0: TEST 11:  unlink 1000 reads of 512
+[26445.096430] usbtest 3-2.3:3.0: unlink retry
+[26445.464787] usbtest 3-2.3:3.0: unlink retry
+[26445.737050] usbtest 3-2.3:3.0: unlink retry
+[26445.849140] usbtest 3-2.3:3.0: unlink retry
+[26445.945265] usbtest 3-2.3:3.0: unlink retry
+[26445.961325] usbtest 3-2.3:3.0: unlink retry
+[26446.425726] usbtest 3-2.3:3.0: unlink retry
+[26446.617924] usbtest 3-2.3:3.0: unlink retry
+[26447.723026] usbtest 3-2.3:3.0: unlink retry
+[26448.091445] usbtest 3-2.3:3.0: unlink retry
+[26448.587912] usbtest 3-2.3:3.0: unlink retry
+[26448.780088] usbtest 3-2.3:3.0: unlink retry
+[26448.796094] usbtest 3-2.3:3.0: unlink retry
+[26449.020349] usbtest 3-2.3:3.0: unlink retry
+[26449.116455] usbtest 3-2.3:3.0: unlink retry
+[26449.164473] usbtest 3-2.3:3.0: unlink retry
+[26450.045362] usbtest 3-2.3:3.0: unlink retry
+[26450.109448] usbtest 3-2.3:3.0: unlink retry
+[26450.173510] usbtest 3-2.3:3.0: unlink retry
+[26450.301650] usbtest 3-2.3:3.0: unlink retry
+[26450.477824] usbtest 3-2.3:3.0: unlink retry
+[26450.605955] usbtest 3-2.3:3.0: unlink retry
+[26451.518837] usbtest 3-2.3:3.0: unlink retry
+[26453.056403] usbtest 3-2.3:3.0: unlink retry
+[26453.360686] usbtest 3-2.3:3.0: unlink retry
+[26453.456790] usbtest 3-2.3:3.0: unlink retry
+[26454.497809] usbtest 3-2.3:3.0: unlink retry
+[26454.978339] usbtest 3-2.3:3.0: unlink retry
+[26455.314641] usbtest 3-2.3:3.0: unlink retry
+[26456.291606] usbtest 3-2.3:3.0: unlink retry
+[26456.980308] usbtest 3-2.3:3.0: unlink retry
+[26457.284622] usbtest 3-2.3:3.0: unlink retry
+[26457.300634] usbtest 3-2.3:3.0: unlink retry
+[26457.428784] usbtest 3-2.3:3.0: unlink retry
+[26457.765068] usbtest 3-2.3:3.0: unlink retry
+[26458.357667] usbtest 3-2.3:3.0: unlink retry
+[26460.023377] usbtest 3-2.3:3.0: unlink retry
+[26460.087450] usbtest 3-2.3:3.0: unlink retry
+[26460.551879] usbtest 3-2.3:3.0: unlink retry
+[26460.912864] usbtest 3-2.3:3.0: TEST 12:  unlink 1000 writes of 512
+[26460.936279] usbtest 3-2.3:3.0: unlink retry
+[26462.057396] usbtest 3-2.3:3.0: unlink retry
+[26462.249595] usbtest 3-2.3:3.0: unlink retry
+[26462.297633] usbtest 3-2.3:3.0: unlink retry
+[26463.018365] usbtest 3-2.3:3.0: unlink retry
+[26463.066422] usbtest 3-2.3:3.0: unlink retry
+[26463.530882] usbtest 3-2.3:3.0: unlink retry
+[26463.883220] usbtest 3-2.3:3.0: unlink retry
+[26463.979345] usbtest 3-2.3:3.0: unlink retry
+[26464.075426] usbtest 3-2.3:3.0: unlink retry
+[26465.853211] usbtest 3-2.3:3.0: unlink retry
+[26467.374700] usbtest 3-2.3:3.0: unlink retry
+[26469.072423] usbtest 3-2.3:3.0: unlink retry
+[26469.408761] usbtest 3-2.3:3.0: unlink retry
+[26469.937311] usbtest 3-2.3:3.0: unlink retry
+[26469.985355] usbtest 3-2.3:3.0: unlink retry
+[26470.722089] usbtest 3-2.3:3.0: unlink retry
+[26471.330653] usbtest 3-2.3:3.0: unlink retry
+[26471.602931] usbtest 3-2.3:3.0: unlink retry
+[26473.044419] usbtest 3-2.3:3.0: unlink retry
+[26473.380753] usbtest 3-2.3:3.0: unlink retry
+[26474.982314] usbtest 3-2.3:3.0: unlink retry
+[26475.158481] usbtest 3-2.3:3.0: unlink retry
+[26475.174497] usbtest 3-2.3:3.0: unlink retry
+[26475.350681] usbtest 3-2.3:3.0: unlink retry
+[26476.183528] usbtest 3-2.3:3.0: unlink retry
+[26476.551891] usbtest 3-2.3:3.0: unlink retry
+[26476.928919] usbtest 3-2.3:3.0: TEST 13:  set/clear 1000 halts
+[26669.084730] INFO: task adb:12123 blocked for more than 120 seconds.
+[26669.084733]       Tainted: G           OX 3.13.0-43-generic #72-Ubuntu
+[26669.084734] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[26669.084735] adb             D ffff88024fa93480     0 12123   2388 0x00000000
+[26669.084738]  ffff88012fe49de0 0000000000000082 ffff880146864800 ffff88012fe49fd8
+[26669.084740]  0000000000013480 0000000000013480 ffff880146864800 ffff88002c7278e8
+[26669.084742]  ffff88002c7278ec ffff880146864800 00000000ffffffff ffff88002c7278f0
+[26669.084744] Call Trace:
+[26669.084760]  [<ffffffff81725539>] schedule_preempt_disabled+0x29/0x70
+[26669.084761]  [<ffffffff817273a5>] __mutex_lock_slowpath+0x135/0x1b0
+[26669.084763]  [<ffffffff8172743f>] mutex_lock+0x1f/0x2f
+[26669.084766]  [<ffffffff81551957>] usbdev_release+0x37/0x130
+[26669.084770]  [<ffffffff811bf7b4>] __fput+0xe4/0x260
+[26669.084771]  [<ffffffff811bf97e>] ____fput+0xe/0x10
+[26669.084775]  [<ffffffff810882f7>] task_work_run+0xa7/0xe0
+[26669.084779]  [<ffffffff81013ed7>] do_notify_resume+0x97/0xb0
+[26669.084781]  [<ffffffff8173196a>] int_signal+0x12/0x17
+[26669.084785] INFO: task testusb_host:6980 blocked for more than 120 seconds.
+[26669.084786]       Tainted: G           OX 3.13.0-43-generic #72-Ubuntu
+[26669.084787] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[26669.084788] testusb_host    D ffff88024fa13480     0  6980   6979 0x00000000
+[26669.084789]  ffff880176fb9b10 0000000000000082 ffff88002d48e000 ffff880176fb9fd8
+[26669.084791]  0000000000013480 0000000000013480 ffff88002d48e000 ffff880176fb9c68
+[26669.084792]  ffff880176fb9c70 7fffffffffffffff ffff88002d48e000 ffff88002c727800
+[26669.084794] Call Trace:
+[26669.084796]  [<ffffffff81725019>] schedule+0x29/0x70
+[26669.084798]  [<ffffffff81724269>] schedule_timeout+0x239/0x2d0
+[26669.084800]  [<ffffffff81725fa1>] ? wait_for_completion_timeout+0xb1/0x170
+[26669.084802]  [<ffffffff81546754>] ? urb_destroy+0x24/0x30
+[26669.084804]  [<ffffffff81725b36>] wait_for_completion+0xa6/0x160
+[26669.084807]  [<ffffffff8109a9b0>] ? wake_up_state+0x20/0x20
+[26669.084810]  [<ffffffffa02ca150>] simple_io+0x70/0x2a0 [usbtest]
+[26669.084812]  [<ffffffffa02ca5a4>] test_halt+0xe4/0x1e0 [usbtest]
+[26669.084814]  [<ffffffffa02cc854>] usbtest_ioctl+0xc94/0x15ca [usbtest]
+[26669.084816]  [<ffffffff81080ee4>] ? wake_up_worker+0x24/0x30
+[26669.084818]  [<ffffffff8108195b>] ? insert_work+0x6b/0xb0
+[26669.084820]  [<ffffffff81453eed>] ? tty_insert_flip_string_fixed_flag+0x9d/0xd0
+[26669.084822]  [<ffffffff81453bbb>] ? tty_schedule_flip+0x2b/0x30
+[26669.084825]  [<ffffffff811a2795>] ? __kmalloc+0x55/0x230
+[26669.084827]  [<ffffffff8155135b>] ? proc_ioctl+0x3b/0x210
+[26669.084829]  [<ffffffff81551449>] proc_ioctl+0x129/0x210
+[26669.084831]  [<ffffffff81552c01>] usbdev_do_ioctl+0x101/0xf30
+[26669.084835]  [<ffffffff811ff881>] ? fsnotify+0x241/0x320
+[26669.084837]  [<ffffffff81553a5e>] usbdev_ioctl+0xe/0x20
+[26669.084840]  [<ffffffff811d0e90>] do_vfs_ioctl+0x2e0/0x4c0
+[26669.084842]  [<ffffffff811bdcec>] ? vfs_write+0x15c/0x1f0
+[26669.084843]  [<ffffffff81724ba1>] ? __schedule+0x381/0x7d0
+[26669.084845]  [<ffffffff811d10f1>] SyS_ioctl+0x81/0xa0
+[26669.084847]  [<ffffffff811be679>] ? SyS_write+0x49/0xa0
+[26669.084849]  [<ffffffff817316ad>] system_call_fastpath+0x1a/0x1f
+[26789.204981] INFO: task adb:12123 blocked for more than 120 seconds.
+[26789.204984]       Tainted: G           OX 3.13.0-43-generic #72-Ubuntu
+[26789.204985] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[26789.204987] adb             D ffff88024fa93480     0 12123   2388 0x00000000
+[26789.204989]  ffff88012fe49de0 0000000000000082 ffff880146864800 ffff88012fe49fd8
+[26789.204991]  0000000000013480 0000000000013480 ffff880146864800 ffff88002c7278e8
+[26789.204993]  ffff88002c7278ec ffff880146864800 00000000ffffffff ffff88002c7278f0
+[26789.204995] Call Trace:
+[26789.205002]  [<ffffffff81725539>] schedule_preempt_disabled+0x29/0x70
+[26789.205004]  [<ffffffff817273a5>] __mutex_lock_slowpath+0x135/0x1b0
+[26789.205006]  [<ffffffff8172743f>] mutex_lock+0x1f/0x2f
+[26789.205009]  [<ffffffff81551957>] usbdev_release+0x37/0x130
+[26789.205012]  [<ffffffff811bf7b4>] __fput+0xe4/0x260
+[26789.205014]  [<ffffffff811bf97e>] ____fput+0xe/0x10
+[26789.205018]  [<ffffffff810882f7>] task_work_run+0xa7/0xe0
+[26789.205021]  [<ffffffff81013ed7>] do_notify_resume+0x97/0xb0
+[26789.205024]  [<ffffffff8173196a>] int_signal+0x12/0x17
+[26789.205027] INFO: task testusb_host:6980 blocked for more than 120 seconds.
+[26789.205028]       Tainted: G           OX 3.13.0-43-generic #72-Ubuntu
+[26789.205029] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[26789.205030] testusb_host    D ffff88024fa13480     0  6980   6979 0x00000000
+[26789.205031]  ffff880176fb9b10 0000000000000082 ffff88002d48e000 ffff880176fb9fd8
+[26789.205033]  0000000000013480 0000000000013480 ffff88002d48e000 ffff880176fb9c68
+[26789.205034]  ffff880176fb9c70 7fffffffffffffff ffff88002d48e000 ffff88002c727800
+[26789.205036] Call Trace:
+[26789.205038]  [<ffffffff81725019>] schedule+0x29/0x70
+[26789.205040]  [<ffffffff81724269>] schedule_timeout+0x239/0x2d0
+[26789.205042]  [<ffffffff81725fa1>] ? wait_for_completion_timeout+0xb1/0x170
+[26789.205044]  [<ffffffff81546754>] ? urb_destroy+0x24/0x30
+[26789.205046]  [<ffffffff81725b36>] wait_for_completion+0xa6/0x160
+[26789.205049]  [<ffffffff8109a9b0>] ? wake_up_state+0x20/0x20
+[26789.205052]  [<ffffffffa02ca150>] simple_io+0x70/0x2a0 [usbtest]
+[26789.205054]  [<ffffffffa02ca5a4>] test_halt+0xe4/0x1e0 [usbtest]
+[26789.205056]  [<ffffffffa02cc854>] usbtest_ioctl+0xc94/0x15ca [usbtest]
+[26789.205058]  [<ffffffff81080ee4>] ? wake_up_worker+0x24/0x30
+[26789.205060]  [<ffffffff8108195b>] ? insert_work+0x6b/0xb0
+[26789.205062]  [<ffffffff81453eed>] ? tty_insert_flip_string_fixed_flag+0x9d/0xd0
+[26789.205063]  [<ffffffff81453bbb>] ? tty_schedule_flip+0x2b/0x30
+[26789.205067]  [<ffffffff811a2795>] ? __kmalloc+0x55/0x230
+[26789.205069]  [<ffffffff8155135b>] ? proc_ioctl+0x3b/0x210
+[26789.205071]  [<ffffffff81551449>] proc_ioctl+0x129/0x210
+[26789.205073]  [<ffffffff81552c01>] usbdev_do_ioctl+0x101/0xf30
+[26789.205077]  [<ffffffff811ff881>] ? fsnotify+0x241/0x320
+[26789.205078]  [<ffffffff81553a5e>] usbdev_ioctl+0xe/0x20
+[26789.205081]  [<ffffffff811d0e90>] do_vfs_ioctl+0x2e0/0x4c0
+[26789.205083]  [<ffffffff811bdcec>] ? vfs_write+0x15c/0x1f0
+[26789.205085]  [<ffffffff81724ba1>] ? __schedule+0x381/0x7d0
+[26789.205087]  [<ffffffff811d10f1>] SyS_ioctl+0x81/0xa0
+[26789.205089]  [<ffffffff811be679>] ? SyS_write+0x49/0xa0
+[26789.205090]  [<ffffffff817316ad>] system_call_fastpath+0x1a/0x1f
+[26909.325192] INFO: task adb:12123 blocked for more than 120 seconds.
+[26909.325199]       Tainted: G           OX 3.13.0-43-generic #72-Ubuntu
+[26909.325201] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[26909.325204] adb             D ffff88024fa93480     0 12123   2388 0x00000000
+[26909.325210]  ffff88012fe49de0 0000000000000082 ffff880146864800 ffff88012fe49fd8
+[26909.325216]  0000000000013480 0000000000013480 ffff880146864800 ffff88002c7278e8
+[26909.325220]  ffff88002c7278ec ffff880146864800 00000000ffffffff ffff88002c7278f0
+[26909.325225] Call Trace:
+[26909.325239]  [<ffffffff81725539>] schedule_preempt_disabled+0x29/0x70
+[26909.325244]  [<ffffffff817273a5>] __mutex_lock_slowpath+0x135/0x1b0
+[26909.325247]  [<ffffffff8172743f>] mutex_lock+0x1f/0x2f
+[26909.325255]  [<ffffffff81551957>] usbdev_release+0x37/0x130
+[26909.325262]  [<ffffffff811bf7b4>] __fput+0xe4/0x260
+[26909.325267]  [<ffffffff811bf97e>] ____fput+0xe/0x10
+[26909.325276]  [<ffffffff810882f7>] task_work_run+0xa7/0xe0
+[26909.325283]  [<ffffffff81013ed7>] do_notify_resume+0x97/0xb0
+[26909.325288]  [<ffffffff8173196a>] int_signal+0x12/0x17
+[26909.325296] INFO: task testusb_host:6980 blocked for more than 120 seconds.
+[26909.325298]       Tainted: G           OX 3.13.0-43-generic #72-Ubuntu
+[26909.325300] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[26909.325302] testusb_host    D ffff88024fa13480     0  6980   6979 0x00000000
+[26909.325306]  ffff880176fb9b10 0000000000000082 ffff88002d48e000 ffff880176fb9fd8
+[26909.325310]  0000000000013480 0000000000013480 ffff88002d48e000 ffff880176fb9c68
+[26909.325314]  ffff880176fb9c70 7fffffffffffffff ffff88002d48e000 ffff88002c727800
+[26909.325318] Call Trace:
+[26909.325324]  [<ffffffff81725019>] schedule+0x29/0x70
+[26909.325329]  [<ffffffff81724269>] schedule_timeout+0x239/0x2d0
+[26909.325334]  [<ffffffff81725fa1>] ? wait_for_completion_timeout+0xb1/0x170
+[26909.325338]  [<ffffffff81546754>] ? urb_destroy+0x24/0x30
+[26909.325344]  [<ffffffff81725b36>] wait_for_completion+0xa6/0x160
+[26909.325351]  [<ffffffff8109a9b0>] ? wake_up_state+0x20/0x20
+[26909.325357]  [<ffffffffa02ca150>] simple_io+0x70/0x2a0 [usbtest]
+[26909.325362]  [<ffffffffa02ca5a4>] test_halt+0xe4/0x1e0 [usbtest]
+[26909.325367]  [<ffffffffa02cc854>] usbtest_ioctl+0xc94/0x15ca [usbtest]
+[26909.325372]  [<ffffffff81080ee4>] ? wake_up_worker+0x24/0x30
+[26909.325376]  [<ffffffff8108195b>] ? insert_work+0x6b/0xb0
+[26909.325382]  [<ffffffff81453eed>] ? tty_insert_flip_string_fixed_flag+0x9d/0xd0
+[26909.325385]  [<ffffffff81453bbb>] ? tty_schedule_flip+0x2b/0x30
+[26909.325393]  [<ffffffff811a2795>] ? __kmalloc+0x55/0x230
+[26909.325398]  [<ffffffff8155135b>] ? proc_ioctl+0x3b/0x210
+[26909.325403]  [<ffffffff81551449>] proc_ioctl+0x129/0x210
+[26909.325409]  [<ffffffff81552c01>] usbdev_do_ioctl+0x101/0xf30
+[26909.325416]  [<ffffffff811ff881>] ? fsnotify+0x241/0x320
+[26909.325421]  [<ffffffff81553a5e>] usbdev_ioctl+0xe/0x20
+[26909.325429]  [<ffffffff811d0e90>] do_vfs_ioctl+0x2e0/0x4c0
+[26909.325434]  [<ffffffff811bdcec>] ? vfs_write+0x15c/0x1f0
+[26909.325439]  [<ffffffff81724ba1>] ? __schedule+0x381/0x7d0
+[26909.325444]  [<ffffffff811d10f1>] SyS_ioctl+0x81/0xa0
+[26909.325448]  [<ffffffff811be679>] ? SyS_write+0x49/0xa0
+[26909.325453]  [<ffffffff817316ad>] system_call_fastpath+0x1a/0x1f
+[27029.445450] INFO: task adb:12123 blocked for more than 120 seconds.
+[27029.445453]       Tainted: G           OX 3.13.0-43-generic #72-Ubuntu
+[27029.445454] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[27029.445455] adb             D ffff88024fa93480     0 12123   2388 0x00000000
+[27029.445458]  ffff88012fe49de0 0000000000000082 ffff880146864800 ffff88012fe49fd8
+[27029.445460]  0000000000013480 0000000000013480 ffff880146864800 ffff88002c7278e8
+[27029.445462]  ffff88002c7278ec ffff880146864800 00000000ffffffff ffff88002c7278f0
+[27029.445464] Call Trace:
+[27029.445470]  [<ffffffff81725539>] schedule_preempt_disabled+0x29/0x70
+[27029.445472]  [<ffffffff817273a5>] __mutex_lock_slowpath+0x135/0x1b0
+[27029.445474]  [<ffffffff8172743f>] mutex_lock+0x1f/0x2f
+[27029.445477]  [<ffffffff81551957>] usbdev_release+0x37/0x130
+[27029.445480]  [<ffffffff811bf7b4>] __fput+0xe4/0x260
+[27029.445482]  [<ffffffff811bf97e>] ____fput+0xe/0x10
+[27029.445486]  [<ffffffff810882f7>] task_work_run+0xa7/0xe0
+[27029.445489]  [<ffffffff81013ed7>] do_notify_resume+0x97/0xb0
+[27029.445492]  [<ffffffff8173196a>] int_signal+0x12/0x17
+[27029.445495] INFO: task testusb_host:6980 blocked for more than 120 seconds.
+[27029.445496]       Tainted: G           OX 3.13.0-43-generic #72-Ubuntu
+[27029.445497] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[27029.445498] testusb_host    D ffff88024fa13480     0  6980   6979 0x00000000
+[27029.445499]  ffff880176fb9b10 0000000000000082 ffff88002d48e000 ffff880176fb9fd8
+[27029.445501]  0000000000013480 0000000000013480 ffff88002d48e000 ffff880176fb9c68
+[27029.445503]  ffff880176fb9c70 7fffffffffffffff ffff88002d48e000 ffff88002c727800
+[27029.445504] Call Trace:
+[27029.445506]  [<ffffffff81725019>] schedule+0x29/0x70
+[27029.445508]  [<ffffffff81724269>] schedule_timeout+0x239/0x2d0
+[27029.445511]  [<ffffffff81725fa1>] ? wait_for_completion_timeout+0xb1/0x170
+[27029.445513]  [<ffffffff81546754>] ? urb_destroy+0x24/0x30
+[27029.445515]  [<ffffffff81725b36>] wait_for_completion+0xa6/0x160
+[27029.445518]  [<ffffffff8109a9b0>] ? wake_up_state+0x20/0x20
+[27029.445521]  [<ffffffffa02ca150>] simple_io+0x70/0x2a0 [usbtest]
+[27029.445523]  [<ffffffffa02ca5a4>] test_halt+0xe4/0x1e0 [usbtest]
+[27029.445525]  [<ffffffffa02cc854>] usbtest_ioctl+0xc94/0x15ca [usbtest]
+[27029.445527]  [<ffffffff81080ee4>] ? wake_up_worker+0x24/0x30
+[27029.445528]  [<ffffffff8108195b>] ? insert_work+0x6b/0xb0
+[27029.445542]  [<ffffffff81453eed>] ? tty_insert_flip_string_fixed_flag+0x9d/0xd0
+[27029.445543]  [<ffffffff81453bbb>] ? tty_schedule_flip+0x2b/0x30
+[27029.445547]  [<ffffffff811a2795>] ? __kmalloc+0x55/0x230
+[27029.445549]  [<ffffffff8155135b>] ? proc_ioctl+0x3b/0x210
+[27029.445551]  [<ffffffff81551449>] proc_ioctl+0x129/0x210
+[27029.445553]  [<ffffffff81552c01>] usbdev_do_ioctl+0x101/0xf30
+[27029.445557]  [<ffffffff811ff881>] ? fsnotify+0x241/0x320
+[27029.445559]  [<ffffffff81553a5e>] usbdev_ioctl+0xe/0x20
+[27029.445562]  [<ffffffff811d0e90>] do_vfs_ioctl+0x2e0/0x4c0
+[27029.445565]  [<ffffffff811bdcec>] ? vfs_write+0x15c/0x1f0
+[27029.445576]  [<ffffffff81724ba1>] ? __schedule+0x381/0x7d0
+[27029.445578]  [<ffffffff811d10f1>] SyS_ioctl+0x81/0xa0
+[27029.445580]  [<ffffffff811be679>] ? SyS_write+0x49/0xa0
+[27029.445581]  [<ffffffff817316ad>] system_call_fastpath+0x1a/0x1f
+[27149.565745] INFO: task adb:12123 blocked for more than 120 seconds.
+[27149.565753]       Tainted: G           OX 3.13.0-43-generic #72-Ubuntu
+[27149.565755] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[27149.565757] adb             D ffff88024fa93480     0 12123   2388 0x00000000
+[27149.565764]  ffff88012fe49de0 0000000000000082 ffff880146864800 ffff88012fe49fd8
+[27149.565769]  0000000000013480 0000000000013480 ffff880146864800 ffff88002c7278e8
+[27149.565773]  ffff88002c7278ec ffff880146864800 00000000ffffffff ffff88002c7278f0
+[27149.565778] Call Trace:
+[27149.565792]  [<ffffffff81725539>] schedule_preempt_disabled+0x29/0x70
+[27149.565796]  [<ffffffff817273a5>] __mutex_lock_slowpath+0x135/0x1b0
+[27149.565800]  [<ffffffff8172743f>] mutex_lock+0x1f/0x2f
+[27149.565807]  [<ffffffff81551957>] usbdev_release+0x37/0x130
+[27149.565814]  [<ffffffff811bf7b4>] __fput+0xe4/0x260
+[27149.565819]  [<ffffffff811bf97e>] ____fput+0xe/0x10
+[27149.565828]  [<ffffffff810882f7>] task_work_run+0xa7/0xe0
+[27149.565835]  [<ffffffff81013ed7>] do_notify_resume+0x97/0xb0
+[27149.565840]  [<ffffffff8173196a>] int_signal+0x12/0x17
+[27149.565848] INFO: task testusb_host:6980 blocked for more than 120 seconds.
+[27149.565850]       Tainted: G           OX 3.13.0-43-generic #72-Ubuntu
+[27149.565852] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[27149.565854] testusb_host    D ffff88024fa13480     0  6980   6979 0x00000000
+[27149.565858]  ffff880176fb9b10 0000000000000082 ffff88002d48e000 ffff880176fb9fd8
+[27149.565862]  0000000000013480 0000000000013480 ffff88002d48e000 ffff880176fb9c68
+[27149.565866]  ffff880176fb9c70 7fffffffffffffff ffff88002d48e000 ffff88002c727800
+[27149.565870] Call Trace:
+[27149.565876]  [<ffffffff81725019>] schedule+0x29/0x70
+[27149.565880]  [<ffffffff81724269>] schedule_timeout+0x239/0x2d0
+[27149.565886]  [<ffffffff81725fa1>] ? wait_for_completion_timeout+0xb1/0x170
+[27149.565890]  [<ffffffff81546754>] ? urb_destroy+0x24/0x30
+[27149.565895]  [<ffffffff81725b36>] wait_for_completion+0xa6/0x160
+[27149.565903]  [<ffffffff8109a9b0>] ? wake_up_state+0x20/0x20
+[27149.565909]  [<ffffffffa02ca150>] simple_io+0x70/0x2a0 [usbtest]
+[27149.565914]  [<ffffffffa02ca5a4>] test_halt+0xe4/0x1e0 [usbtest]
+[27149.565919]  [<ffffffffa02cc854>] usbtest_ioctl+0xc94/0x15ca [usbtest]
+[27149.565924]  [<ffffffff81080ee4>] ? wake_up_worker+0x24/0x30
+[27149.565928]  [<ffffffff8108195b>] ? insert_work+0x6b/0xb0
+[27149.565934]  [<ffffffff81453eed>] ? tty_insert_flip_string_fixed_flag+0x9d/0xd0
+[27149.565937]  [<ffffffff81453bbb>] ? tty_schedule_flip+0x2b/0x30
+[27149.565946]  [<ffffffff811a2795>] ? __kmalloc+0x55/0x230
+[27149.565951]  [<ffffffff8155135b>] ? proc_ioctl+0x3b/0x210
+[27149.565956]  [<ffffffff81551449>] proc_ioctl+0x129/0x210
+[27149.565961]  [<ffffffff81552c01>] usbdev_do_ioctl+0x101/0xf30
+[27149.565969]  [<ffffffff811ff881>] ? fsnotify+0x241/0x320
+[27149.565974]  [<ffffffff81553a5e>] usbdev_ioctl+0xe/0x20
+[27149.565981]  [<ffffffff811d0e90>] do_vfs_ioctl+0x2e0/0x4c0
+[27149.565986]  [<ffffffff811bdcec>] ? vfs_write+0x15c/0x1f0
+[27149.565991]  [<ffffffff81724ba1>] ? __schedule+0x381/0x7d0
+[27149.565996]  [<ffffffff811d10f1>] SyS_ioctl+0x81/0xa0
+[27149.566000]  [<ffffffff811be679>] ? SyS_write+0x49/0xa0
+[27149.566004]  [<ffffffff817316ad>] system_call_fastpath+0x1a/0x1f
+[27530.524632] systemd-hostnamed[7280]: Warning: nss-myhostname is not installed. Changing the local hostname might make it unresolveable. Please install nss-myhostname!
+
+
+NOTE: don't support test case 13 & 14
+$ ./testusb_host -D /dev/bus/usb/003/011 -t 14 -c 15000 -s 256 -v 1
+
+

@@ -1,0 +1,10 @@
+The detail info see http://www.linux-usb.org/usbtest/
+
+linux3.3 and before version:
+#mount -t usbfs none /proc/bus/usb
+#./testusb -a
+
+linux3.3 later:
+usbfs is abandoned, the usb device information is generated
+by sysfs device driver architecture in /dev/bus/usb
+
