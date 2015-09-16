@@ -12,6 +12,7 @@ set file name lit
 set rec pack 1000
 set send pack 1000
 set window 5
+set session-log TIMESTAMPED-TEXT
 ; c
 ; auto connect
 ; Escape character: Ctrl-\ (ASCII 28, FS): enabled
