@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#define DATA_SIZE 4096
 #define SLEEP_TIME 50000
 #define KMSG_PATH "/proc/kmsg"
 #define LOG_FILE_PATH "/data/tsi.log"
@@ -16,11 +17,12 @@ int main(int arg, char *argv[])
 	int r_fd;
 	int w_fd;
 	int size;
-	char line_data[256] = {0};
+	char line_data[DATA_SIZE] = {0};
 
 	printf("Start log ...\n");
 
-	r_fd = open(KMSG_PATH, O_RDONLY | O_NONBLOCK);
+	//r_fd = open(KMSG_PATH, O_RDONLY | O_NONBLOCK);
+	r_fd = open(KMSG_PATH, O_RDONLY);
 	if (r_fd < 0) {
 		printf("open %s failed\n", KMSG_PATH);
 		return -1;
@@ -35,7 +37,7 @@ int main(int arg, char *argv[])
 	}
 
 	while (1) {
-		size = read(r_fd, line_data, 256);
+		size = read(r_fd, line_data, DATA_SIZE);
 		printf("size = %d", size);
 		if (size > 0) {
 			ret = write(w_fd, line_data, size);
@@ -46,7 +48,7 @@ int main(int arg, char *argv[])
 		}
 
 		//fseek(r_fp, 0, SEEK_CUR);
-		usleep(SLEEP_TIME);
+		//usleep(SLEEP_TIME);
 	}
 
 	printf("End log...\n");
