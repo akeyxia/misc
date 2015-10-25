@@ -1,0 +1,14 @@
+1) insert module name to init_modules.conf
+/etc/modules-load.d/init_modules.conf
+
+2) enable systemd service to load modules, please select A or B
+- A) use /usr/lib/systemd/systemd-modules-load
+/usr/lib/systemd/system/systemd-modules-load.service
+systemctl enable systemd-modules-load.service
+
+- B) use /etc/init.d/modutils.sh
+/etc/init.d/modutils.sh
+/usr/lib/systemd/system/systemd-modules-load-sh.service
+systemctl enable systemd-modules-load-sh.service
+
+

@@ -1,0 +1,10 @@
+[Unit]
+Description=Load Kernel Modules
+
+[Service]
+Type=oneshot
+ExecStart=/etc/init.d/modutils.sh
+
+[Install]
+WantedBy=sysinit.target
+
