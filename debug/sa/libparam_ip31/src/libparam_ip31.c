@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <asm/ioctl.h>
 #include "libparam_ip31.h"
+#include <mtd/mtd-user.h>
 
 #define LOGE(fmt,args...)     printf (fmt ,##args)
 #define LOGD(fmt,args...)     printf (fmt ,##args)
@@ -15,6 +16,9 @@
 
 /*belowing defined the param part data chart --start*/
 #define PARAM_PART "/dev/mtd3"
+
+#define SECTOR_SIZE     (256 * 1024) //256kB, used to store info
+#define ERASE_SIZE      (256 * 1024) //256kB, flash specific
 
 /*1st chart is boot_param */
 #define BOOT_PARAM_OFFSET_S 0x0
@@ -279,17 +283,94 @@ E_RET_VALUE_LIST ip31_boot_param_get(E_BOOT_PARAM_LIST item, char *dest)
 
     return E_OK;
 }
+
+static int flash_erase(int fd, int start, int length)
+{
+	struct erase_info_user erase;
+
+	int istart = start / ERASE_SIZE;
+	int iend = (start + length) / ERASE_SIZE;
+
+	if((start + length) % ERASE_SIZE)
+		iend++;
+
+	//LOGE("%s: istart = %d, iend = %d\n", __func__, istart, iend);
+
+	for(; istart < iend; istart++){
+		erase.start = istart * ERASE_SIZE;
+		erase.length = ERASE_SIZE;
+		if (ioctl(fd, MEMERASE, &erase) != 0) {
+			LOGE("ioctl error: %s\n", strerror(errno));
+			return -2;
+		}
+	}
+	return 0;
+}
+
+
+static int flash_write(int start, int length, char *inbuf)
+{
+	int istart = start / ERASE_SIZE;
+	int iend = (start + length) / ERASE_SIZE;
+        int ilength;
+	char *buf = NULL;
+	int ret = 0;
+        int read_sector;
+
+	if((start + length) % ERASE_SIZE)
+		iend++;
+        ilength = iend - istart;
+
+	//LOGE("%s: istart = %d, iend = %d\n", __func__, istart, iend);
+
+	if (NULL == (buf = malloc(ilength * ERASE_SIZE))) {
+		LOGE("malloc error : %s\n", strerror(errno));
+		ret = -1;
+		goto err;
+	}
+	memset(buf, 0x0, ilength * ERASE_SIZE);
+
+
+        lseek(fd, 0, SEEK_SET);
+
+	ret = read(fd, buf, ilength * ERASE_SIZE);
+	if(ret != ilength * ERASE_SIZE){
+		LOGE("read error : %s\n", strerror(errno));
+		ret = -2;
+		goto err;
+	}
+
+	ret = flash_erase(fd, start, length);
+        if (ret < 0) {
+                LOGE("erase error %d\n", ret);
+                goto err;
+        }
+	memcpy(buf + (start - istart * SECTOR_SIZE), inbuf, length);
+
+	lseek(fd, istart * ERASE_SIZE, SEEK_SET);
+	write(fd, buf, ERASE_SIZE /*iend * ERASE_SIZE*/);
+
+err:
+	if(buf) free(buf);
+	return ret;
+}
+
+
 E_RET_VALUE_LIST ip31_id_set(E_ID_LIST item, char *src, int size)
 {
     int ret = -1;
     int write_offset = 0;
     int write_size = 0;
     char buf[1024] = {0};
+	int istart;
+	int iend;
+        int ilength;
 
     get_device_id_prop(item, &write_offset, &write_size);
 
     memcpy(buf, src, size);
-    ret = param_write(write_offset, buf, size);//use size instead of write_size
+    //ret = param_write(write_offset, buf, size);//use size instead of write_size
+    ret = flash_write(write_offset, size, buf);
     if (ret < 0)
     {
         LOGE("return error: %d\n", ret);
