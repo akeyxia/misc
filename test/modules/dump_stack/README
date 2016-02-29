@@ -1,0 +1,23 @@
+1) make
+2) insmod hello_dump_stack.ko
+3) dmesg
+------------------------------------
+[32294.513550] dump_stack start
+[32294.513554] CPU: 5 PID: 29768 Comm: insmod Tainted: G           OX 3.13.0-43-generic #72-Ubuntu
+[32294.513556] Hardware name: Hewlett-Packard HP ProBook 640 G1/1993, BIOS L77 Ver. 01.22 09/26/2014
+[32294.513557]  ffffffffa00bf000 ffff88013e5abd30 ffffffff81720bf6 0000000000000000
+[32294.513560]  ffff88013e5abd40 ffffffffa00bf017 ffff88013e5abdb8 ffffffff8100214a
+[32294.513563]  0000000000001000 ffffffffa074f050 0000000000000001 ffffffffa074f000
+[32294.513565] Call Trace:
+[32294.513582]  [<ffffffffa00bf000>] ? 0xffffffffa00befff
+[32294.513587]  [<ffffffff81720bf6>] dump_stack+0x45/0x56
+[32294.513589]  [<ffffffffa00bf017>] hello_init+0x17/0x1000 [hello_dump_stack]
+[32294.513592]  [<ffffffff8100214a>] do_one_initcall+0xfa/0x1b0
+[32294.513596]  [<ffffffff810598b3>] ? set_memory_nx+0x43/0x50
+[32294.513602]  [<ffffffff810e247d>] load_module+0x12dd/0x1b40
+[32294.513605]  [<ffffffff810ddf00>] ? store_uevent+0x40/0x40
+[32294.513607]  [<ffffffff810e2e56>] SyS_finit_module+0x86/0xb0
+[32294.513610]  [<ffffffff817316ad>] system_call_fastpath+0x1a/0x1f
+[32294.513611] dump_stack over
+------------------------------------
+
