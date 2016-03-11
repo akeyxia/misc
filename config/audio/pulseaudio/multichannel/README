@@ -1,0 +1,690 @@
+.asoundrc
+configures 4-channel input & output ALSA devices.
+Copy to /home/root 
+
+default.pa
+this file tells PulseAudio to load the virtual ALSA device.
+Copy to /etc/pulse
+
+client.conf
+disables PulseAudio server respawning.
+Copy to /etc/pulse
+
+Usage:
+1) To capture 4 channels with arecord:
+arecord -D plug:multicapture -c 4 -r 16000 -f s16_le testcapture.wav
+
+2) To capture 4 channels with parec:
+parec -r --channels=4 --rate=16000 --format=s16le -d alsa_input.multicapture testcapture.raw
+parec --device=alsa_input.multicapture --channels=4 --rate=16000 --format=s16le  testcapture.raw
+
+3) To playback 4 channels with parec:
+parec -p --device=alsa_output.0.analog-stereo --format=s16le --channels=4 --rate=16000 testcapture.raw
+
+-------------------------------------------------------------------------------------------------------
+connection-id: create stream to pass the name of property.
+
+
+sh-3.2# pactl list
+Module #0
+	Name: module-device-restore
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "Automatically restore the volume/mute state of devices"
+		module.version = "5.0"
+
+Module #1
+	Name: module-stream-restore
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "Automatically restore the volume/mute/device state of streams"
+		module.version = "5.0"
+
+Module #2
+	Name: module-card-restore
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "Automatically restore profile of cards"
+		module.version = "5.0"
+
+Module #3
+	Name: module-augment-properties
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "Augment the property sets of streams with additional static information"
+		module.version = "5.0"
+
+Module #4
+	Name: module-switch-on-port-available
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		
+
+Module #5
+	Name: module-alsa-sink
+	Argument: device=hw:1,0
+	Usage counter: 0
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "ALSA Sink"
+		module.version = "5.0"
+
+Module #7
+	Name: module-alsa-sink
+	Argument: device_id=0
+	Usage counter: 0
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "ALSA Sink"
+		module.version = "5.0"
+
+Module #9
+	Name: module-alsa-source
+	Argument: device_id=2
+	Usage counter: 0
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "ALSA Source"
+		module.version = "5.0"
+
+Module #10
+	Name: module-alsa-sink
+	Argument: device_id=3
+	Usage counter: 0
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "ALSA Sink"
+		module.version = "5.0"
+
+Module #11
+	Name: module-alsa-source
+	Argument: device_id=3
+	Usage counter: 1
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "ALSA Source"
+		module.version = "5.0"
+
+Module #12
+	Name: module-alsa-sink
+	Argument: device_id=4
+	Usage counter: 0
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "ALSA Sink"
+		module.version = "5.0"
+
+Module #13
+	Name: module-alsa-source
+	Argument: device_id=4
+	Usage counter: 0
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "ALSA Source"
+		module.version = "5.0"
+
+Module #14
+	Name: module-native-protocol-unix
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "Native protocol (UNIX sockets)"
+		module.version = "5.0"
+
+Module #15
+	Name: module-default-device-restore
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "Automatically restore the default sink and source"
+		module.version = "5.0"
+
+Module #16
+	Name: module-rescue-streams
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "When a sink/source is removed, try to move its streams to the default sink/source"
+		module.version = "5.0"
+
+Module #17
+	Name: module-always-sink
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Colin Guthrie"
+		module.description = "Always keeps at least one sink loaded even if it's a null one"
+		module.version = "5.0"
+
+Module #18
+	Name: module-intended-roles
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "Automatically set device of streams based on intended roles of devices"
+		module.version = "5.0"
+
+Module #19
+	Name: module-suspend-on-idle
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "When a sink/source is idle for too long, suspend it"
+		module.version = "5.0"
+
+Module #20
+	Name: module-position-event-sounds
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "Position event sounds between L and R depending on the position on screen of the widget triggering them."
+		module.version = "5.0"
+
+Module #21
+	Name: module-role-cork
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Lennart Poettering"
+		module.description = "Mute & cork streams with certain roles while others exist"
+		module.version = "5.0"
+
+Module #22
+	Name: module-filter-heuristics
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Colin Guthrie"
+		module.description = "Detect when various filters are desirable"
+		module.version = "5.0"
+
+Module #23
+	Name: module-filter-apply
+	Argument: 
+	Usage counter: n/a
+	Properties:
+		module.author = "Colin Guthrie"
+		module.description = "Load filter sinks automatically when needed"
+		module.version = "5.0"
+
+Sink #0
+	State: SUSPENDED
+	Name: alsa_output.hw_1_0
+	Description: HERO-IIS1
+	Driver: module-alsa-sink.c
+	Sample Specification: s16le 2ch 48000Hz
+	Channel Map: front-left,front-right
+	Owner Module: 5
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor Source: alsa_output.hw_1_0.monitor
+	Latency: 0 usec, configured 0 usec
+	Flags: HARDWARE DECIBEL_VOLUME LATENCY 
+	Properties:
+		alsa.resolution_bits = "16"
+		device.api = "alsa"
+		device.class = "sound"
+		alsa.class = "generic"
+		alsa.subclass = "generic-mix"
+		alsa.name = ""
+		alsa.id = "HEROIIS1 hero-iis1-0"
+		alsa.subdevice = "0"
+		alsa.subdevice_name = "subdevice #0"
+		alsa.device = "0"
+		alsa.card = "1"
+		alsa.card_name = "HERO-IIS1"
+		alsa.long_card_name = "HERO-IIS1"
+		device.bus_path = "platform-hero_iis1"
+		sysfs.path = "/devices/hero_iis1/sound/card1"
+		device.string = "hw:1,0"
+		device.buffering.buffer_size = "131072"
+		device.buffering.fragment_size = "65536"
+		device.access_mode = "mmap+timer"
+		device.description = "HERO-IIS1"
+		device.icon_name = "audio-card"
+	Formats:
+		pcm
+
+Sink #1
+	State: SUSPENDED
+	Name: alsa_output.0.analog-stereo
+	Description: HERO-IIS0 Analog Stereo
+	Driver: module-alsa-sink.c
+	Sample Specification: s16le 2ch 48000Hz
+	Channel Map: front-left,front-right
+	Owner Module: 7
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor Source: alsa_output.0.analog-stereo.monitor
+	Latency: 0 usec, configured 0 usec
+	Flags: HARDWARE DECIBEL_VOLUME LATENCY 
+	Properties:
+		alsa.resolution_bits = "16"
+		device.api = "alsa"
+		device.class = "sound"
+		alsa.class = "generic"
+		alsa.subclass = "generic-mix"
+		alsa.name = ""
+		alsa.id = "HEROIIS0 hero-iis0-0"
+		alsa.subdevice = "0"
+		alsa.subdevice_name = "subdevice #0"
+		alsa.device = "0"
+		alsa.card = "0"
+		alsa.card_name = "HERO-IIS0"
+		alsa.long_card_name = "HERO-IIS0"
+		device.bus_path = "platform-primary_sound"
+		sysfs.path = "/devices/primary_sound/sound/card0"
+		device.string = "hw:0"
+		device.buffering.buffer_size = "131072"
+		device.buffering.fragment_size = "65536"
+		device.access_mode = "mmap+timer"
+		device.profile.name = "analog-stereo"
+		device.profile.description = "Analog Stereo"
+		device.description = "HERO-IIS0 Analog Stereo"
+		device.icon_name = "audio-card-analog"
+	Formats:
+		pcm
+
+Sink #2
+	State: SUSPENDED
+	Name: alsa_output.3.analog-stereo
+	Description: HERO-HOSTIOSD0 Analog Stereo
+	Driver: module-alsa-sink.c
+	Sample Specification: s16le 2ch 48000Hz
+	Channel Map: front-left,front-right
+	Owner Module: 10
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor Source: alsa_output.3.analog-stereo.monitor
+	Latency: 0 usec, configured 0 usec
+	Flags: HARDWARE DECIBEL_VOLUME LATENCY 
+	Properties:
+		alsa.resolution_bits = "16"
+		device.api = "alsa"
+		device.class = "sound"
+		alsa.class = "generic"
+		alsa.subclass = "generic-mix"
+		alsa.name = ""
+		alsa.id = "HEROHOSTIIS0 hero-hostiis0-0"
+		alsa.subdevice = "0"
+		alsa.subdevice_name = "subdevice #0"
+		alsa.device = "0"
+		alsa.card = "3"
+		alsa.card_name = "HERO-HOSTIOSD0"
+		alsa.long_card_name = "HERO-HOSTIOSD0"
+		device.bus_path = "platform-hero_hostiosd0"
+		sysfs.path = "/devices/hero_hostiosd0/sound/card3"
+		device.string = "hw:3"
+		device.buffering.buffer_size = "131072"
+		device.buffering.fragment_size = "65536"
+		device.access_mode = "mmap+timer"
+		device.profile.name = "analog-stereo"
+		device.profile.description = "Analog Stereo"
+		device.description = "HERO-HOSTIOSD0 Analog Stereo"
+		device.icon_name = "audio-card-analog"
+	Formats:
+		pcm
+
+Sink #3
+	State: SUSPENDED
+	Name: alsa_output.4.analog-stereo
+	Description: BT-PCM Analog Stereo
+	Driver: module-alsa-sink.c
+	Sample Specification: s16le 2ch 8000Hz
+	Channel Map: front-left,front-right
+	Owner Module: 12
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor Source: alsa_output.4.analog-stereo.monitor
+	Latency: 0 usec, configured 0 usec
+	Flags: HARDWARE DECIBEL_VOLUME LATENCY 
+	Properties:
+		alsa.resolution_bits = "16"
+		device.api = "alsa"
+		device.class = "sound"
+		alsa.class = "generic"
+		alsa.subclass = "generic-mix"
+		alsa.name = ""
+		alsa.id = "BTPCM bt-pcm-0"
+		alsa.subdevice = "0"
+		alsa.subdevice_name = "subdevice #0"
+		alsa.device = "0"
+		alsa.card = "4"
+		alsa.card_name = "BT-PCM"
+		alsa.long_card_name = "BT-PCM"
+		device.bus_path = "platform-btpcm"
+		sysfs.path = "/devices/btpcm/sound/card4"
+		device.string = "hw:4"
+		device.buffering.buffer_size = "64000"
+		device.buffering.fragment_size = "32000"
+		device.access_mode = "mmap+timer"
+		device.profile.name = "analog-stereo"
+		device.profile.description = "Analog Stereo"
+		device.description = "BT-PCM Analog Stereo"
+		device.icon_name = "audio-card-analog"
+	Formats:
+		pcm
+
+Source #0
+	State: SUSPENDED
+	Name: alsa_output.hw_1_0.monitor
+	Description: Monitor of HERO-IIS1
+	Driver: module-alsa-sink.c
+	Sample Specification: s16le 2ch 48000Hz
+	Channel Map: front-left,front-right
+	Owner Module: 5
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor of Sink: alsa_output.hw_1_0
+	Latency: 0 usec, configured 0 usec
+	Flags: DECIBEL_VOLUME LATENCY 
+	Properties:
+		device.description = "Monitor of HERO-IIS1"
+		device.class = "monitor"
+		device.icon_name = "audio-input-microphone"
+	Formats:
+		pcm
+
+Source #1
+	State: SUSPENDED
+	Name: alsa_output.0.analog-stereo.monitor
+	Description: Monitor of HERO-IIS0 Analog Stereo
+	Driver: module-alsa-sink.c
+	Sample Specification: s16le 2ch 48000Hz
+	Channel Map: front-left,front-right
+	Owner Module: 7
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor of Sink: alsa_output.0.analog-stereo
+	Latency: 0 usec, configured 0 usec
+	Flags: DECIBEL_VOLUME LATENCY 
+	Properties:
+		device.description = "Monitor of HERO-IIS0 Analog Stereo"
+		device.class = "monitor"
+		device.icon_name = "audio-input-microphone"
+	Formats:
+		pcm
+
+Source #2
+	State: SUSPENDED
+	Name: alsa_input.2.analog-stereo
+	Description: HERO-HOSTOSD1 Analog Stereo
+	Driver: module-alsa-source.c
+	Sample Specification: s16le 2ch 48000Hz
+	Channel Map: front-left,front-right
+	Owner Module: 9
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor of Sink: n/a
+	Latency: 0 usec, configured 0 usec
+	Flags: HARDWARE DECIBEL_VOLUME LATENCY 
+	Properties:
+		alsa.resolution_bits = "16"
+		device.api = "alsa"
+		device.class = "sound"
+		alsa.class = "generic"
+		alsa.subclass = "generic-mix"
+		alsa.name = ""
+		alsa.id = "HEROIIS2 hero-hostiis1-0"
+		alsa.subdevice = "0"
+		alsa.subdevice_name = "subdevice #0"
+		alsa.device = "0"
+		alsa.card = "2"
+		alsa.card_name = "HERO-HOSTOSD1"
+		alsa.long_card_name = "HERO-HOSTOSD1"
+		device.bus_path = "platform-hero_hostosd1"
+		sysfs.path = "/devices/hero_hostosd1/sound/card2"
+		device.string = "hw:2"
+		device.buffering.buffer_size = "131072"
+		device.buffering.fragment_size = "65536"
+		device.access_mode = "mmap+timer"
+		device.profile.name = "analog-stereo"
+		device.profile.description = "Analog Stereo"
+		device.description = "HERO-HOSTOSD1 Analog Stereo"
+		device.icon_name = "audio-input-microphone-analog"
+	Formats:
+		pcm
+
+Source #3
+	State: SUSPENDED
+	Name: alsa_output.3.analog-stereo.monitor
+	Description: Monitor of HERO-HOSTIOSD0 Analog Stereo
+	Driver: module-alsa-sink.c
+	Sample Specification: s16le 2ch 48000Hz
+	Channel Map: front-left,front-right
+	Owner Module: 10
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor of Sink: alsa_output.3.analog-stereo
+	Latency: 0 usec, configured 0 usec
+	Flags: DECIBEL_VOLUME LATENCY 
+	Properties:
+		device.description = "Monitor of HERO-HOSTIOSD0 Analog Stereo"
+		device.class = "monitor"
+		device.icon_name = "audio-input-microphone"
+	Formats:
+		pcm
+
+Source #4
+	State: RUNNING
+	Name: alsa_input.3.analog-stereo
+	Description: HERO-HOSTIOSD0 Analog Stereo
+	Driver: module-alsa-source.c
+	Sample Specification: s16le 2ch 48000Hz
+	Channel Map: front-left,front-right
+	Owner Module: 11
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor of Sink: n/a
+	Latency: 0 usec, configured 16000 usec
+	Flags: HARDWARE DECIBEL_VOLUME LATENCY 
+	Properties:
+		alsa.resolution_bits = "16"
+		device.api = "alsa"
+		device.class = "sound"
+		alsa.class = "generic"
+		alsa.subclass = "generic-mix"
+		alsa.name = ""
+		alsa.id = "HEROHOSTIIS0 hero-hostiis0-0"
+		alsa.subdevice = "0"
+		alsa.subdevice_name = "subdevice #0"
+		alsa.device = "0"
+		alsa.card = "3"
+		alsa.card_name = "HERO-HOSTIOSD0"
+		alsa.long_card_name = "HERO-HOSTIOSD0"
+		device.bus_path = "platform-hero_hostiosd0"
+		sysfs.path = "/devices/hero_hostiosd0/sound/card3"
+		device.string = "hw:3"
+		device.buffering.buffer_size = "131072"
+		device.buffering.fragment_size = "65536"
+		device.access_mode = "mmap+timer"
+		device.profile.name = "analog-stereo"
+		device.profile.description = "Analog Stereo"
+		device.description = "HERO-HOSTIOSD0 Analog Stereo"
+		device.icon_name = "audio-input-microphone-analog"
+	Formats:
+		pcm
+
+Source #5
+	State: SUSPENDED
+	Name: alsa_output.4.analog-stereo.monitor
+	Description: Monitor of BT-PCM Analog Stereo
+	Driver: module-alsa-sink.c
+	Sample Specification: s16le 2ch 8000Hz
+	Channel Map: front-left,front-right
+	Owner Module: 12
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor of Sink: alsa_output.4.analog-stereo
+	Latency: 0 usec, configured 0 usec
+	Flags: DECIBEL_VOLUME LATENCY 
+	Properties:
+		device.description = "Monitor of BT-PCM Analog Stereo"
+		device.class = "monitor"
+		device.icon_name = "audio-input-microphone"
+	Formats:
+		pcm
+
+Source #6
+	State: SUSPENDED
+	Name: alsa_input.4.analog-stereo
+	Description: BT-PCM Analog Stereo
+	Driver: module-alsa-source.c
+	Sample Specification: s16le 2ch 8000Hz
+	Channel Map: front-left,front-right
+	Owner Module: 13
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor of Sink: n/a
+	Latency: 0 usec, configured 0 usec
+	Flags: HARDWARE DECIBEL_VOLUME LATENCY 
+	Properties:
+		alsa.resolution_bits = "16"
+		device.api = "alsa"
+		device.class = "sound"
+		alsa.class = "generic"
+		alsa.subclass = "generic-mix"
+		alsa.name = ""
+		alsa.id = "BTPCM bt-pcm-0"
+		alsa.subdevice = "0"
+		alsa.subdevice_name = "subdevice #0"
+		alsa.device = "0"
+		alsa.card = "4"
+		alsa.card_name = "BT-PCM"
+		alsa.long_card_name = "BT-PCM"
+		device.bus_path = "platform-btpcm"
+		sysfs.path = "/devices/btpcm/sound/card4"
+		device.string = "hw:4"
+		device.buffering.buffer_size = "64000"
+		device.buffering.fragment_size = "32000"
+		device.access_mode = "mmap+timer"
+		device.profile.name = "analog-stereo"
+		device.profile.description = "Analog Stereo"
+		device.description = "BT-PCM Analog Stereo"
+		device.icon_name = "audio-input-microphone-analog"
+	Formats:
+		pcm
+
+Source Output #4
+	Driver: protocol-native.c
+	Owner Module: 14
+	Client: 1
+	Source: 4
+	Sample Specification: s16le 1ch 16000Hz
+	Channel Map: mono
+	Format: pcm, format.sample_format = "\"s16le\""  format.rate = "16000"  format.channels = "1"  format.channel_map = "\"mono\""
+	Corked: no
+	Mute: no
+	Volume: mono: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Buffer Latency: 0 usec
+	Source Latency: 0 usec
+	Resample method: speex-fixed-6
+	Properties:
+		connection_id = "VR:MIC-12"
+		media.name = "PAL PulseAudio In"
+		application.name = "PAL PulseAudio Context"
+		native-protocol.peer = "UNIX socket client"
+		native-protocol.version = "29"
+		application.process.id = "2412"
+		application.process.user = "root"
+		application.process.host = "dra7xx-evm"
+		application.process.binary = "natp.exe"
+		application.language = "C"
+		application.process.machine_id = "8dd6817222754b9ab15f1896dc095712"
+		module-stream-restore.id = "source-output-by-application-name:PAL PulseAudio Context"
+
+Client #0
+	Driver: protocol-native.c
+	Owner Module: 14
+	Properties:
+		application.name = "audio_mgr"
+		native-protocol.peer = "UNIX socket client"
+		native-protocol.version = "29"
+		application.process.id = "2287"
+		application.process.user = "root"
+		application.process.host = "dra7xx-evm"
+		application.process.binary = "audio_mgr"
+		application.language = "C"
+		application.process.machine_id = "8dd6817222754b9ab15f1896dc095712"
+
+Client #1
+	Driver: protocol-native.c
+	Owner Module: 14
+	Properties:
+		application.name = "PAL PulseAudio Context"
+		native-protocol.peer = "UNIX socket client"
+		native-protocol.version = "29"
+		application.process.id = "2412"
+		application.process.user = "root"
+		application.process.host = "dra7xx-evm"
+		application.process.binary = "natp.exe"
+		application.language = "C"
+		application.process.machine_id = "8dd6817222754b9ab15f1896dc095712"
+
+Client #2
+	Driver: protocol-native.c
+	Owner Module: 14
+	Properties:
+		application.name = "mini_player"
+		native-protocol.peer = "UNIX socket client"
+		native-protocol.version = "29"
+		application.process.id = "2378"
+		application.process.user = "root"
+		application.process.host = "dra7xx-evm"
+		application.process.binary = "mini_player"
+		application.language = "C"
+		application.process.machine_id = "8dd6817222754b9ab15f1896dc095712"
+
+Client #4
+	Driver: protocol-native.c
+	Owner Module: 14
+	Properties:
+		application.name = "pactl"
+		native-protocol.peer = "UNIX socket client"
+		native-protocol.version = "29"
+		application.process.id = "3208"
+		application.process.user = "root"
+		application.process.host = "dra7xx-evm"
+		application.process.binary = "pactl"
+		application.language = "C"
+		application.process.machine_id = "8dd6817222754b9ab15f1896dc095712"
+
+

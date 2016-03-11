@@ -1,0 +1,68 @@
+# HEROIIS0: playback pcm
+# HEROIIS1: playback pcm
+# HEROHOSTIOSD0: capture pcm
+# HEROHOSTOSD1: capture pcm
+
+pcm.dev1p {
+    type hw;
+	card "HEROIIS0";
+}
+
+pcm.dev2p {
+    type hw;
+	card "HEROIIS1";
+}
+
+pcm.dev1c {
+    type hw;
+	card "HEROHOSTIOSD0";
+}
+
+pcm.dev2c {
+    type hw;
+	card "HEROHOSTOSD1";
+}
+
+pcm.multiplay {
+	type multi;
+	slaves.a.pcm dev1p;
+	slaves.a.channels 2;
+	slaves.b.pcm dev2p;
+	slaves.b.channels 2;
+
+	bindings.0.slave a;
+	bindings.0.channel 0;
+	bindings.1.slave a;
+	bindings.1.channel 1;
+	bindings.2.slave b;
+	bindings.2.channel 0;
+	bindings.3.slave b;
+	bindings.3.channel 1;
+}
+
+ctl.multiplay {
+	type hw;
+	card 0;
+}
+
+pcm.multicapture {
+	type multi;
+	slaves.a.pcm dev1c;
+	slaves.a.channels 2;
+	slaves.b.pcm dev2c;
+	slaves.b.channels 2;
+
+	bindings.0.slave a;
+	bindings.0.channel 0;
+	bindings.1.slave a;
+	bindings.1.channel 1;
+	bindings.2.slave b;
+	bindings.2.channel 0;
+	bindings.3.slave b;
+	bindings.3.channel 1;
+}
+
+ctl.multicapture {
+	type hw;
+	card 0;
+}
