@@ -1,0 +1,9 @@
+[Unit]
+Description=Stress Test Service
+
+[Service]
+Type=oneshot
+ExecStart=/data/stress_test.sh
+
+[Install]
+WantedBy=sysinit.target
