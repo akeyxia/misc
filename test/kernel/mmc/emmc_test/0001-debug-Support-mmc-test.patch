@@ -1,0 +1,122 @@
+From a938e06904169d192a44629f3dcb81e07bfbbee3 Mon Sep 17 00:00:00 2001
+From: mis <mis@mis.com>
+Date: Mon, 18 Apr 2016 08:11:53 +0800
+Subject: [PATCH] debug: Support mmc test
+
+usage:
+echo testnum > /sys/kernel/debug/mmc1/mmc1:0001/test
+
+sh-3.2# cat testlist
+1:      Basic write (no data verification)
+2:      Basic read (no data verification)
+3:      Basic write (with data verification)
+4:      Basic read (with data verification)
+5:      Multi-block write
+6:      Multi-block read
+7:      Power of two block writes
+8:      Power of two block reads
+9:      Weird sized block writes
+10:     Weird sized block reads
+11:     Badly aligned write
+12:     Badly aligned read
+13:     Badly aligned multi-block write
+14:     Badly aligned multi-block read
+15:     Correct xfer_size at write (start failure)
+16:     Correct xfer_size at read (start failure)
+17:     Correct xfer_size at write (midway failure)
+18:     Correct xfer_size at read (midway failure)
+19:     Highmem write
+20:     Highmem read
+21:     Multi-block highmem write
+22:     Multi-block highmem read
+23:     Best-case read performance
+24:     Best-case write performance
+25:     Best-case read performance into scattered pages
+26:     Best-case write performance from scattered pages
+27:     Single read performance by transfer size
+28:     Single write performance by transfer size
+29:     Single trim performance by transfer size
+30:     Consecutive read performance by transfer size
+31:     Consecutive write performance by transfer size
+32:     Consecutive trim performance by transfer size
+33:     Random read performance by transfer size
+34:     Random write performance by transfer size
+35:     Large sequential read into scattered pages
+36:     Large sequential write from scattered pages
+37:     Write performance with blocking req 4k to 4MB
+38:     Write performance with non-blocking req 4k to 4MB
+39:     Read performance with blocking req 4k to 4MB
+40:     Read performance with non-blocking req 4k to 4MB
+41:     Write performance blocking req 1 to 512 sg elems
+42:     Write performance non-blocking req 1 to 512 sg elems
+43:     Read performance blocking req 1 to 512 sg elems
+44:     Read performance non-blocking req 1 to 512 sg elems
+45:     eMMC hardware reset
+
+Change-Id: Ie58722a4e4a96e95b65440a6515913afd8acf55d
+---
+ arch/arm/configs/projectX_defconfig |  2 +-
+ drivers/mmc/core/bus.c          | 20 ++++++++++++++++++++
+ 2 files changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/configs/ip31_defconfig b/arch/arm/configs/ip31_defconfig
+index 5e07371..bfb0ffe 100644
+--- a/arch/arm/configs/ip31_defconfig
++++ b/arch/arm/configs/ip31_defconfig
+@@ -2488,7 +2488,7 @@ CONFIG_MMC_BLOCK=y
+ CONFIG_MMC_BLOCK_MINORS=32
+ CONFIG_MMC_BLOCK_BOUNCE=y
+ # CONFIG_SDIO_UART is not set
+-# CONFIG_MMC_TEST is not set
++CONFIG_MMC_TEST=y
+ 
+ #
+ # MMC/SD/SDIO Host Controller Drivers
+diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
+index 0c431a2..3ff7b29 100644
+--- a/drivers/mmc/core/bus.c
++++ b/drivers/mmc/core/bus.c
+@@ -28,6 +28,10 @@
+ 
+ #define to_mmc_driver(d)	container_of(d, struct mmc_driver, drv)
+ 
++#ifdef CONFIG_MMC_TEST
++static struct mmc_driver *mmc_test_drv = NULL;
++#endif
++
+ static ssize_t type_show(struct device *dev,
+ 	struct device_attribute *attr, char *buf)
+ {
+@@ -112,6 +116,15 @@ static int mmc_bus_probe(struct device *dev)
+ 	struct mmc_driver *drv = to_mmc_driver(dev->driver);
+ 	struct mmc_card *card = mmc_dev_to_card(dev);
+ 
++#ifdef CONFIG_MMC_TEST
++	if (mmc_test_drv != NULL) {
++		mmc_test_drv->probe(card);
++		pr_crit("--------------------------------------debug mmc_bus_probe\n");
++	} else {
++		pr_crit("--------------------------------------not debug mmc_bus_probe\n");
++	}
++#endif
++
+ 	return drv->probe(card);
+ }
+ 
+@@ -247,6 +260,13 @@ void mmc_unregister_bus(void)
+ int mmc_register_driver(struct mmc_driver *drv)
+ {
+ 	drv->drv.bus = &mmc_bus_type;
++
++#ifdef CONFIG_MMC_TEST
++	pr_crit("--------------------------debug defined config_mmc_test in mmc_register_driver\n");
++	if(!strcmp(drv->drv.name,"mmc_test"))
++		mmc_test_drv = drv;
++#endif
++
+ 	return driver_register(&drv->drv);
+ }
+ 
+-- 
+1.9.1
+
