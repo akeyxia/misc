@@ -19,7 +19,7 @@ user_name=$1
 if [ $# -ge 2 ]; then
 	remote_ip=$2
 else
-	remote_ip=10.25.20.11
+	remote_ip=10.25.20.12
 fi
 
 echo ${user_name}@${remote_ip}

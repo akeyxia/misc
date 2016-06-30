@@ -14,7 +14,7 @@ if [ $# -lt 4 ]; then
 	usage
 fi
 
-remote_ip=10.25.20.11
+remote_ip=10.25.20.12
 user_name=$1
 action=$2
 src_path=$3
