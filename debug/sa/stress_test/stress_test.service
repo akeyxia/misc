@@ -1,8 +1,0 @@
-[Unit]
-Description=Stress Test
-
-[Service]
-ExecStart=/data/stress_test.sh
-
-[Install]
-WantedBy=multi-user.target
